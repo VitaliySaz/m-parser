@@ -61,7 +61,7 @@ class ParserProducts:
         self.settings = settings
         self.product_set = set()
 
-    async def __await_page_text(self):
+    async def get_product_set(self):
         tasks = [asyncio.create_task(self.__get_page_products_set(num))
                  for num in range(self.settings.page_count)]
         await asyncio.gather(*tasks)
@@ -81,10 +81,6 @@ class ParserProducts:
         if resp.status == 200:
             page = json.loads(text)['products']
             self.product_set |= set(get_page_products_id(page))
-
-    async def get_product_set(self):
-        await self.__await_page_text()
-
 
 class ParserItems:
     ITEM_URL = 'https://makeup.com.ua/ajax/product/{}/options/'
