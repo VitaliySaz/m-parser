@@ -18,19 +18,15 @@ HEADERS = {
     'X-Requested-With': 'XMLHttpRequest'
 }
 
-@dataclass
-class Item:
-    id: str
-    product_id: str
-    img: str
-    price: float
-    value_with_wh: str
-    wished: str
 
-    def __init__(self, **kwargs):
+class Item:
+
+    def __init__(self, id: str, product_id: str, price: float, **kwargs):
+        self.product_id = str(product_id)
+        self.id = str(id)
+        self.price = float(price)
+        self.history = []
         self.__dict__.update(kwargs)
-        self.id = str(self.id)
-        self.price = float(self.price)
 
     def __repr__(self):
         return f"Item(id='{self.id}', price={self.price})"
@@ -86,9 +82,8 @@ class ParserProducts:
             page = json.loads(text)['products']
             self.product_set |= set(get_page_products_id(page))
 
-    def get_product_set(self):
-        asyncio.run(self.__await_page_text())
-        return self.product_set
+    async def get_product_set(self):
+        await self.__await_page_text()
 
 
 class ParserItems:
@@ -108,10 +103,6 @@ class ParserItems:
                 item.update({'product_id': product_id})
                 self.item_dict[item['id']] = item
 
-    async def _await_product_items_tasks(self):
-        tasks = [asyncio.create_task(self._set_product_items(pr)) for pr in self.product_id_set]
-        await asyncio.gather(*tasks)
-
-    def get_item_dict(self):
-        asyncio.run(self._await_product_items_tasks())
-        return self.item_dict
+    async def get_item_dict(self):
+        await asyncio.gather(
+            *[asyncio.create_task(self._set_product_items(pr)) for pr in self.product_id_set])
