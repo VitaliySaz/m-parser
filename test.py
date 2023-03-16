@@ -1,8 +1,6 @@
+import socket
 
-
-if __name__ == '__main__':
-
-    import socket
+def main():
 
     # Создаем объект сокета
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,3 +17,11 @@ if __name__ == '__main__':
     finally:
         # Закрываем соединение
         client_socket.close()
+
+
+if __name__ == '__main__':
+
+    main()
+
+    c = C(1, 2, 6)
+    print(c)

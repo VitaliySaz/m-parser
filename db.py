@@ -34,7 +34,7 @@ class PriceDB:
                 id_item INTEGER NOT NULL,
                 price REAL NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_item) REFERENCES items (id)
+                FOREIGN KEY (id_item) REFERENCES items (item_id)
             );
         """)
     GET_ID_ITEM = "SELECT id FROM items WHERE item = ?"
