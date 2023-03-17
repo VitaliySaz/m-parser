@@ -1,24 +1,4 @@
 import sqlite3
-from dataclasses import dataclass, field
-from statistics import mean
-from typing import List
-
-
-@dataclass
-class PriceHistory:
-    id: str
-    prices: List[tuple] = field(repr=False)
-
-    def __bool__(self):
-        return bool(self.prices)
-
-    @property
-    def price_list(self):
-        return [price[0] for price in self.prices]
-
-    @property
-    def middle_price(self):
-        return mean(self.price_list)
 
 
 class PriceDB:
@@ -60,8 +40,9 @@ class PriceDB:
 
     def get_prices(self, item):
         self.cur.execute(self.GET_PRICES, (item,))
-        rows = self.cur.fetchall()
-        return PriceHistory(item, [row[1:] for row in rows])
+        if history := self.cur.fetchall():
+            return history
+        raise ValueError
 
     def commit(self):
         self.conn.commit()

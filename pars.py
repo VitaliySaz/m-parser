@@ -1,10 +1,10 @@
 import asyncio
 import json
-from collections import UserDict, UserList
 from dataclasses import dataclass, field
 
-from typing import Set, Optional
+from typing import Set
 
+from data import Item
 from utils import aiohttp_request, exceptions_handler, get_page_products_id
 
 
@@ -16,29 +16,6 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Appl'
                   'eWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
     'X-Requested-With': 'XMLHttpRequest'}
-
-
-class Item:
-
-    def __init__(self, item_id: str, product_id: str, price: float, **kwargs):
-        self.product_id = str(product_id)
-        self.item_id = str(item_id)
-        self.price = float(price)
-        self.__dict__.update(kwargs)
-
-    def __repr__(self):
-        return f"Item(item_id='{self.item_id}', price={self.price})"
-
-    def __eq__(self, other):
-        return self.item_id == other
-
-    @property
-    def is_eu(self) -> bool:
-        return '_' in self.item_id
-
-    @property
-    def id_ua(self) -> str:
-        return self.item_id.split('_')[0]
 
 
 @dataclass
