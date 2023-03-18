@@ -11,6 +11,7 @@ class Item:
         self.product_id = str(product_id)
         self.item_id = str(item_id)
         self.price = float(price)
+        self.value_with_wh = None
         self.__dict__.update(kwargs)
 
     def __repr__(self):
@@ -33,35 +34,29 @@ class PriceHistory:
     item_id: str
     prices: List[tuple] = field(repr=False)
 
+    def __post_init__(self):
+        self.price_list = [price[1] for price in self.prices]
+        self.middle_price = mean(self.price_list)
+
     def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.item_id}, {self.get_middle_price()}>'
+        return f'<{self.__class__.__name__}: {self.item_id}, {self.middle_price}>'
 
     def __bool__(self):
         return bool(self.prices)
-
-    def get_price_list(self):
-        return [price[1] for price in self.prices]
-
-    def get_middle_price(self):
-        return mean(self.get_price_list())
 
 
 @dataclass
 class ComparePrices:
     item: Item
     history: PriceHistory
+    price_delta: float = field(init=False, default=None)
+
+    def __post_init__(self):
+        self.price_delta = ((self.item.price - self.history.middle_price) / self.history.middle_price) * 100
 
     def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.item}, {self.history}, {self.get_price_delta()}>'
+        return f'<{self.__class__.__name__}: {self.item}, {self.history}, {self.price_delta}>'
 
-    def get_price_delta(self):
-        middle_price = self.history.get_middle_price()
-        return ((self.item.price - middle_price) / middle_price) * 100
-
-def get_only_sale_prices(compare_prices: Iterable[ComparePrices]) -> Iterable[ComparePrices]:
-    for price in compare_prices:
-        if price.get_price_delta() < 0:
-            yield price
-
-def sorted_by_delta(compare_prices: Iterable[ComparePrices]) -> Iterable[ComparePrices]:
-    return sorted(compare_prices, key=lambda x: x.get_price_delta())
+    def __str__(self):
+        return f'https://makeup.com.ua/ua/product/{self.item.product_id}/\n ' \
+               f'| {self.item.value_with_wh} : {self.item.price} | {self.price_delta}'
