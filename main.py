@@ -2,6 +2,7 @@ import json
 import time
 import asyncio
 import datetime
+from pprint import pprint
 from typing import NamedTuple, Optional, List
 
 import telegram
@@ -11,7 +12,8 @@ import pars
 
 class ManagerSettings(NamedTuple):
     pars: List[dict]
-    timedelta: dict = {'seconds': 2}
+    delta_limit: int = 30
+    timedelta: dict = {'seconds': 20}
     set_to_db: dict = {'seconds': 20}
 
 timedelta: Optional[datetime.timedelta] = None
@@ -30,13 +32,15 @@ def to_history():
 
 async def main1(data):
     item_dict = await pars.get_items(data)
-    print('1')
-    manager = compare.compare(item_dict, 'simple_strategy')
-    limited = compare.limited(manager, limit=20)
-    for r in compare.sorted_by_delta(compare.get_only_sale_prices(limited)):
+    print(item_dict)
+    manager = compare.compare(item_dict, 'ua_eu_strategy')
+    limit = settings.delta_limit
+    pprint([str(x) for x in sorted(manager, reverse=True) if x > -limit])
+    for r in filter(lambda x: x > -limit, sorted(manager, reverse=True)):
         # bot = telegram.Bot(token='token')
         # await bot.send_message(chat_id='1000612443', text=str(r))
         print(r)
+
     to_history()
 
 async def handle_client(reader, writer):

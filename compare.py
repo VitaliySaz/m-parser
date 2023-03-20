@@ -23,17 +23,6 @@ def add_to_history(item_dict: dict[str, data.Item]):
         db.add_price(item=value.item_id, price=value.price)
     db.commit()
 
-def get_only_sale_prices(compare_prices: _.Iterable[ComparePrices]) -> _.Iterable[ComparePrices]:
-    for price in compare_prices:
-        if price.price_delta < 0:
-            yield price
-
-def sorted_by_delta(compare_prices: _.Iterable[ComparePrices]) -> _.Iterable[ComparePrices]:
-    return sorted(compare_prices, key=lambda x: x.price_delta)
-
-def limited(compare_prices: _.Iterable[ComparePrices], limit=0) -> _.Iterable[ComparePrices]:
-    return (cp for cp in compare_prices if cp.price_delta < -limit)
-
 ##############
 
 def _register(func):

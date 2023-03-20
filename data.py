@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from numbers import Complex
 from statistics import mean
 from typing import *
 
@@ -8,8 +9,8 @@ from typing import *
 class Item:
 
     def __init__(self, item_id: str, product_id: str, price: float, **kwargs):
-        self.product_id = str(product_id)
         self.item_id = str(item_id)
+        self.product_id = str(product_id)
         self.price = float(price)
         self.value_with_wh = None
         self.__dict__.update(kwargs)
@@ -18,7 +19,16 @@ class Item:
         return f"<{self.__class__.__name__}: {self.item_id}, {self.price}>"
 
     def __eq__(self, other):
-        return self.item_id == other
+        return self.item_id == other.item_id
+
+    def __lt__(self, other):
+        return self.price > other.price
+
+    def __gt__(self, other):
+        return self.price < other.price
+
+    def __hash__(self):
+        return hash(self.item_id)
 
     @property
     def is_eu(self) -> bool:
@@ -60,3 +70,17 @@ class ComparePrices:
     def __str__(self):
         return f'https://makeup.com.ua/ua/product/{self.item.product_id}/\n ' \
                f'| {self.item.value_with_wh} : {self.item.price} | {self.price_delta}'
+
+    def __lt__(self, other):
+        if isinstance(other, type(self)):
+            return self.price_delta > other.price_delta
+        return self.price_delta > other
+
+    def __gt__(self, other):
+        if isinstance(other, type(self)):
+            return self.price_delta < other.price_delta
+        return self.price_delta < other
+
+    def __hash__(self):
+        return hash(self.item)
+

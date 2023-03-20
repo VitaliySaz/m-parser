@@ -3,11 +3,9 @@ import socket
 import json
 
 st = {
-    # 'pars': [
-    #     {'page_count': 1, 'category_id': 3},
-    #     {'page_count': 1, 'category_id': 2419}
-    # ],
-    # 'timedelta': {'seconds': 2}
+    'pars': [
+        {'page_count': 10, 'category_id': 3}
+    ],
 }
 
 
