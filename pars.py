@@ -2,13 +2,10 @@ import asyncio
 import json
 from dataclasses import dataclass, field
 
-from typing import Set
+from typing import Set, NamedTuple
 
 from data import Item
 from utils import aiohttp_request, exceptions_handler, get_page_products_id
-
-
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 HEADERS = {
     'Content type': 'text_html/javascript; charset=utf-8',
@@ -18,11 +15,10 @@ HEADERS = {
     'X-Requested-With': 'XMLHttpRequest'}
 
 
-@dataclass
-class Settings:
+class Settings(NamedTuple):
     category_id: int
     page_count: int
-    data: dict = field(default_factory=dict)
+    data: dict = {}
 
 
 class ParserProducts:

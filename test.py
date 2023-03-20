@@ -1,5 +1,16 @@
 import socket
 
+import json
+
+st = {
+    # 'pars': [
+    #     {'page_count': 1, 'category_id': 3},
+    #     {'page_count': 1, 'category_id': 2419}
+    # ],
+    # 'timedelta': {'seconds': 2}
+}
+
+
 def main():
 
     # Создаем объект сокета
@@ -8,20 +19,17 @@ def main():
     # Устанавливаем соединение
     server_address = ('localhost', 6000)
     client_socket.connect(server_address)
-    client_socket.send(input("Enter a number: ").encode())
+    client_socket.send(json.dumps(st).encode())
     try:
         while True:
             # Получаем ответ от сервера
             data = client_socket.recv(1024)
-            print('Received:', data.decode())
+            if data:
+                print('Received:', data.decode())
     finally:
         # Закрываем соединение
         client_socket.close()
 
 
 if __name__ == '__main__':
-
     main()
-
-    c = C(1, 2, 6)
-    print(c)
