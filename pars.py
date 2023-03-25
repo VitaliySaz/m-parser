@@ -67,7 +67,7 @@ class ParserItems:
         if resp.status == 200:
             for item in json.loads(json_items):
                 item.update({'product_id': product_id, 'item_id': item.pop('id')})
-                self.item_dict[item['item_id']] = Item(**item)
+                self.item_dict[str(item['item_id'])] = Item(**item)
 
     async def get_item_dict(self):
         await asyncio.gather(

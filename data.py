@@ -18,6 +18,9 @@ class Item:
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.item_id}, {self.price}>"
 
+    def __str__(self):
+        return self.item_id
+
     def __eq__(self, other):
         return self.item_id == other.item_id
 
@@ -38,11 +41,17 @@ class Item:
     def id_ua(self) -> str:
         return self.item_id.split('_')[0]
 
+    @property
+    def id_eu(self) -> str:
+        if self.is_eu:
+            return self.item_id
+        return self.item_id + '_3'
+
 
 @dataclass
 class PriceHistory:
     item_id: str
-    prices: List[tuple] = field(repr=False)
+    prices: Deque[tuple] = field(repr=False)
 
     def __post_init__(self):
         self.price_list = [price[1] for price in self.prices]

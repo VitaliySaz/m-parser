@@ -13,7 +13,7 @@ import pars
 class ManagerSettings(NamedTuple):
     pars: List[dict]
     delta_limit: int = 30
-    timedelta: dict = {'seconds': 20}
+    timedelta: dict = {'seconds': 5}
     set_to_db: dict = {'seconds': 20}
 
 timedelta: Optional[datetime.timedelta] = None
@@ -35,7 +35,6 @@ async def main1(data):
     print(item_dict)
     manager = compare.compare(item_dict, 'ua_eu_strategy')
     limit = settings.delta_limit
-    pprint([str(x) for x in sorted(manager, reverse=True) if x > -limit])
     for r in filter(lambda x: x > -limit, sorted(manager, reverse=True)):
         # bot = telegram.Bot(token='token')
         # await bot.send_message(chat_id='1000612443', text=str(r))
@@ -81,19 +80,6 @@ def run():
 if __name__ == '__main__':
 
     run()
-
-    # print('Today :', type(today))
-    # one_day = datetime.timedelta(days=1)
-    # print('One day :', type(one_day))
-    # yesterday = today - one_day
-    # print('Yesterday:', yesterday)
-    # tomorrow = today + one_day
-    # print('Tomorrow :', tomorrow)
-    # print()
-    # res = tomorrow - yesterday
-    #
-    # print('tomorrow - yesterday:', )
-    # print('yesterday - tomorrow:', yesterday - tomorrow)
 
 
 
