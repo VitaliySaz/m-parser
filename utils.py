@@ -32,3 +32,16 @@ def exceptions_handler():
                 print('Cannot connect to host')
         return wrapper
     return decorator
+
+
+def get_items_obj_dict(item_list, item_obj):
+    res_dict = {}
+    for i_dict in item_list:
+        item_id = {
+            'item_id': str(i_dict['id']),
+            'price': float(i_dict['price']),
+            'value': str(i_dict['value_with_wh']),
+            'product_id': str(i_dict['product_id']),
+        }
+        res_dict[item_id['item_id']] = item_obj(**item_id)
+    return res_dict

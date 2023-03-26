@@ -3,7 +3,7 @@ import shelve
 import sqlite3
 import time
 from collections import deque, defaultdict
-from typing import NamedTuple, Deque, Sequence, Dict, TypeVar
+from typing import NamedTuple, Deque, Sequence, Dict, TypeVar, Iterable
 
 from data import Item
 
@@ -25,7 +25,7 @@ class SavePrice(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_prices(self, items: Sequence[ItemId]) -> Dict[ItemId, Deque[Hist]]:
+    def get_prices(self, items: Iterable[ItemId]) -> Dict[ItemId, Deque[Hist]]:
         pass
 
     @abc.abstractmethod

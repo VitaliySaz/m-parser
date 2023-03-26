@@ -57,7 +57,7 @@ class ParserItems:
 
     def __init__(self, product_id_set: Set[str]):
         self.product_id_set = product_id_set
-        self.item_dict = {}
+        self.item_list = []
 
     @exceptions_handler()
     async def _set_product_items(self, product_id: str):
@@ -66,8 +66,8 @@ class ParserItems:
             headers=HEADERS)
         if resp.status == 200:
             for item in json.loads(json_items):
-                item.update({'product_id': product_id, 'item_id': item.pop('id')})
-                self.item_dict[str(item['item_id'])] = Item(**item)
+                item['product_id'] = product_id
+                self.item_list.append(item)
 
     async def get_item_dict(self):
         await asyncio.gather(
@@ -79,4 +79,4 @@ async def get_items(settings: Settings):
     await pr.get_product_set()
     it = ParserItems(pr.product_set)
     await it.get_item_dict()
-    return it.item_dict
+    return it.item_list

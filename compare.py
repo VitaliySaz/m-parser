@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from statistics import mean
 from typing import Sequence, NamedTuple, List, Iterable
 
-from data import PriceHistory, ComparePrices, Item
-
+from data import Item, ItemHistory, ComparePrices
 from db import SavePriceDeque
 
 strategies = {}
@@ -15,15 +15,14 @@ class CompareData(NamedTuple):
     compare_data: tuple
 
 def compare(item_dict: dict[str, Item], strategy: str):
-    add_to_history(item_dict)
-    res = strategies[strategy](item_dict.values())
-    prices = db.get_prices([i for _, i in res])
-    for id_, compare_id in res:
-        price_hist, item = prices.get(compare_id), item_dict.get(id_)
+    compare_list = strategies[strategy](item_dict.values())
+    prices = db.get_prices(compare_id for _, compare_id in compare_list)
+    for base_id, compare_id in compare_list:
+        price_hist, item = prices.get(compare_id), item_dict.get(base_id)
         if not (price_hist and item):
             continue
-        history = PriceHistory(item_id=compare_id, prices=price_hist)
-        yield ComparePrices(item=item, history=history)
+        history = ItemHistory(item_id=compare_id, price=mean(price[1] for price in price_hist))
+        yield ComparePrices(item=item, compare=history)
 
 def add_to_history(item_dict: dict[str, Item]):
     for value in item_dict.values():
@@ -37,9 +36,9 @@ def _register(func):
     return func
 
 @_register
-def simple_strategy(items: Iterable[Item]) -> List[tuple]:
+def simple_strategy(items: Iterable[Item]) -> list:
     return [(item.item_id, item.item_id) for item in items]
 
 @_register
-def ua_eu_strategy(items: Iterable[Item]) -> List[tuple]:
-    return [(item.item_id, item.id_eu) for item in items]
+def ua_eu_strategy(items: Iterable[Item]) -> list:
+    return [(item.item_id, item.id_ua) for item in items]

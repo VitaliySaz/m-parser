@@ -9,6 +9,9 @@ import telegram
 
 import compare
 import pars
+from data import Item
+from utils import get_items_obj_dict
+
 
 class ManagerSettings(NamedTuple):
     pars: List[dict]
@@ -30,15 +33,19 @@ def to_history():
         print('save the data')
         future = now + timedelta
 
+
 async def main1(data):
-    item_dict = await pars.get_items(data)
-    print(item_dict)
-    manager = compare.compare(item_dict, 'ua_eu_strategy')
+    print('start')
+    item_list = await pars.get_items(data)
+    print('end pars')
+    items_obj_dict = get_items_obj_dict(item_list, Item)
+    manager = compare.compare(items_obj_dict, 'ua_eu_strategy')
     limit = settings.delta_limit
     for r in filter(lambda x: x > -limit, sorted(manager, reverse=True)):
         # bot = telegram.Bot(token='token')
         # await bot.send_message(chat_id='1000612443', text=str(r))
         print(r)
+    print('#'*10)
 
     to_history()
 

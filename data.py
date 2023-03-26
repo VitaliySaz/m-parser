@@ -5,15 +5,11 @@ from numbers import Complex
 from statistics import mean
 from typing import *
 
+@dataclass
+class ItemBase:
 
-class Item:
-
-    def __init__(self, item_id: str, product_id: str, price: float, **kwargs):
-        self.item_id = str(item_id)
-        self.product_id = str(product_id)
-        self.price = float(price)
-        self.value_with_wh = None
-        self.__dict__.update(kwargs)
+    item_id: str
+    price: float
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.item_id}, {self.price}>"
@@ -33,6 +29,13 @@ class Item:
     def __hash__(self):
         return hash(self.item_id)
 
+
+@dataclass
+class Item(ItemBase):
+
+    product_id: str
+    value: str
+
     @property
     def is_eu(self) -> bool:
         return '_' in self.item_id
@@ -47,38 +50,32 @@ class Item:
             return self.item_id
         return self.item_id + '_3'
 
-
 @dataclass
-class PriceHistory:
-    item_id: str
-    prices: Deque[tuple] = field(repr=False)
+class ItemHistory(ItemBase):
 
-    def __post_init__(self):
-        self.price_list = [price[1] for price in self.prices]
-        self.middle_price = mean(self.price_list)
+    @property
+    def middle_price(self):
+        return self.price
 
-    def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.item_id}, {self.middle_price}>'
 
-    def __bool__(self):
-        return bool(self.prices)
-
+ItemT = TypeVar('ItemT', bound=ItemBase)
 
 @dataclass
 class ComparePrices:
+
     item: Item
-    history: PriceHistory
+    compare: ItemT
     price_delta: float = field(init=False, default=None)
 
     def __post_init__(self):
-        self.price_delta = ((self.item.price - self.history.middle_price) / self.history.middle_price) * 100
+        self.price_delta = ((self.item.price - self.compare.price) / self.compare.price) * 100
 
     def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.item}, {self.history}, {self.price_delta}>'
+        return f'<{self.__class__.__name__}: {self.item}, {self.compare}, {self.price_delta}>'
 
     def __str__(self):
         return f'https://makeup.com.ua/ua/product/{self.item.product_id}/\n ' \
-               f'| {self.item.value_with_wh} : {self.item.price} | {self.price_delta}'
+               f'| {self.item.value} : {self.item.price} | {self.price_delta}'
 
     def __lt__(self, other):
         if isinstance(other, type(self)):
