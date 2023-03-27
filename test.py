@@ -15,7 +15,7 @@ def main():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # Устанавливаем соединение
-    server_address = ('localhost', 6000)
+    server_address = ('localhost', 6060)
     client_socket.connect(server_address)
     client_socket.send(json.dumps(st).encode())
     try:

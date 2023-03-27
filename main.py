@@ -7,15 +7,16 @@ from typing import NamedTuple, Optional, List
 
 import telegram
 
-import compare
+
 import pars
+from compare import CompareManagerHistory, ua_eu_strategy, CompareManagerItem
 from data import Item
 from utils import get_items_obj_dict
 
 
 class ManagerSettings(NamedTuple):
     pars: List[dict]
-    delta_limit: int = 30
+    delta_limit: int = 1
     timedelta: dict = {'seconds': 5}
     set_to_db: dict = {'seconds': 20}
 
@@ -39,9 +40,11 @@ async def main1(data):
     item_list = await pars.get_items(data)
     print('end pars')
     items_obj_dict = get_items_obj_dict(item_list, Item)
-    manager = compare.compare(items_obj_dict, 'ua_eu_strategy')
+
+    manager = CompareManagerHistory(items_obj_dict)
+    res = manager.to_compare(ua_eu_strategy)
     limit = settings.delta_limit
-    for r in filter(lambda x: x > -limit, sorted(manager, reverse=True)):
+    for r in filter(lambda x: x > -limit, sorted(res, reverse=True)):
         # bot = telegram.Bot(token='token')
         # await bot.send_message(chat_id='1000612443', text=str(r))
         print(r)
@@ -76,7 +79,7 @@ async def handle_client(reader, writer):
         writer.close()
 
 async def main():
-    server = await asyncio.start_server(handle_client, 'localhost', 6000)
+    server = await asyncio.start_server(handle_client, 'localhost', 6060)
     async with server:
         await server.serve_forever()
 
