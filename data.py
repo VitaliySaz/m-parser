@@ -71,7 +71,7 @@ class ComparePrices:
         self.price_delta = ((self.item.price - self.compare.price) / self.compare.price) * 100
 
     def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.item}, {self.compare}, {self.price_delta}>'
+        return f'<{type(self).__name__}: {self.item}, {self.compare}, {self.price_delta}>'
 
     def __str__(self):
         return f'https://makeup.com.ua/ua/product/{self.item.product_id}/\n ' \

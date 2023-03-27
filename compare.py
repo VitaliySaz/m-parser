@@ -16,13 +16,13 @@ class CompareManagerBase(abc.ABC):
         self.dict_item = dict_item
 
     @abc.abstractmethod
-    def get_compare_data(self, compare_list: Dict[str, str]) -> Dict[str, ItemT]:
+    def get_compare_data(self, compare_list: Dict[str, str]) -> Iterable[str, ItemT]:
         pass
 
     def to_compare(self, strategy: Callable[[Iterable[Item]], dict]):
-        compare_list = strategy(self.dict_item.values())
-        compare_data = self.get_compare_data(compare_list)
-        for base_id, compare_obj in compare_data.items():
+        compare_dict = strategy(self.dict_item.values())
+        compare_data = self.get_compare_data(compare_dict)
+        for base_id, compare_obj in compare_data:
             if not self.dict_item.get(base_id):
                 continue
             yield ComparePrices(item=self.dict_item[base_id], compare=compare_obj)
@@ -39,13 +39,13 @@ class DbManagerBase:
 
 class CompareManagerHistory(DbManagerBase, CompareManagerBase):
 
-    def get_compare_data(self, compare_list):
-        compare_data = {}
-        prices = self.db.get_prices(compare_list.values())
-        for item_id, prices in prices.items():
+    def get_compare_data(self, compare_dict):
+        prices_dict = self.db.get_prices(compare_dict.values())
+        for base_id, compare_id in compare_dict.items():
+            if not (prices := prices_dict.get(compare_id)):
+                continue
             mean_price = mean(price[1] for price in prices)
-            compare_data[item_id] = ItemHistory(item_id=item_id, price=mean_price)
-        return compare_data
+            yield base_id, ItemHistory(item_id=compare_id, price=mean_price)
 
 
 class CompareManagerItem(CompareManagerBase):
@@ -56,8 +56,11 @@ class CompareManagerItem(CompareManagerBase):
         super().__init__(dict_item)
         self.dict_item_compare = dict_item_compare
 
-    def get_compare_data(self, compare_list):
-        return self.dict_item_compare
+    def get_compare_data(self, compare_dict):
+        for base_id, compare_id in compare_dict.items():
+            if not (compare_item := self.dict_item_compare.get(compare_id)):
+                continue
+            yield base_id, compare_item
 
 ##############
 
@@ -66,4 +69,4 @@ def simple_strategy(items: Iterable[Item]) -> dict:
 
 
 def ua_eu_strategy(items: Iterable[Item]) -> dict:
-    return {item.item_id: item.id_ua for item in items}
+    return {item.item_id: item.id_eu for item in items if not item.is_eu}
