@@ -10,13 +10,13 @@ import telegram
 
 import pars
 from compare import CompareManagerHistory, ua_eu_strategy, CompareManagerItem
-from data import Item
+from data import ItemMakeup
 from utils import get_items_obj_dict
 
 
 class ManagerSettings(NamedTuple):
     pars: List[dict]
-    delta_limit: int = 30
+    delta_limit: int = 20
     timedelta: dict = {'seconds': 5}
     set_to_db: dict = {'seconds': 20}
 
@@ -39,10 +39,10 @@ async def main1(data):
     print('start')
     item_list = await pars.get_items(data)
     print('end pars')
-    items_obj_dict = get_items_obj_dict(item_list, Item)
-    manager = CompareManagerHistory(items_obj_dict)
+    items_obj_dict = get_items_obj_dict(item_list, ItemMakeup)
+    manager = CompareManagerItem(items_obj_dict, items_obj_dict)
     compare_item = manager.to_compare(ua_eu_strategy)
-    # print(list(compare_item))
+    # print(set(compare_item))
     limit = settings.delta_limit
     for r in filter(lambda x: x > -limit, sorted(compare_item, reverse=True)):
         # bot = telegram.Bot(token='token')

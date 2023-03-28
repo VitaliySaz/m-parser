@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from typing import Set, NamedTuple
 
-from data import Item
+from data import ItemMakeup
 from utils import aiohttp_request, exceptions_handler, get_page_products_id
 
 HEADERS = {

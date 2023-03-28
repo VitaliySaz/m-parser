@@ -8,6 +8,10 @@ from typing import *
 @dataclass
 class ItemBase:
 
+    """Клас ItemBase є базовим класом, який визначає деякі спільні властивості
+    та методи для об'єктів товарів, включаючи ідентифікатор товару та його ціну,
+     а також методи для порівняння, рівності та хешування."""
+
     item_id: str
     price: float
 
@@ -31,7 +35,11 @@ class ItemBase:
 
 
 @dataclass
-class Item(ItemBase):
+class ItemMakeup(ItemBase):
+
+    """Клас Item розширює ItemBase конкретно для роботи з магазином Makeup.com.ua і додає
+    дві властивості для отримання ідентифікатора  продукту та його значення, а також методи
+     для визначення того, чи є товар в ЄС та отримання його ідентифікаторів в ЄС та Україні."""
 
     product_id: str
     value: str
@@ -50,8 +58,15 @@ class Item(ItemBase):
             return self.item_id
         return self.item_id + '_3'
 
+    def __hash__(self):
+        return hash(self.item_id)
+
 @dataclass
-class ItemHistory(ItemBase):
+class ItemMakeupHistory(ItemBase):
+
+    """Клас ItemMakeupHistory також є підкласом класу ItemBase,
+    але не містить жодних додаткових властивостей чи методів.
+    Його призначення - зберігати історію цін на продукт."""
 
     @property
     def middle_price(self):
@@ -61,9 +76,15 @@ class ItemHistory(ItemBase):
 ItemT = TypeVar('ItemT', bound=ItemBase)
 
 @dataclass
-class ComparePrices:
+class CompareMakeupPrices:
 
-    item: Item
+    """Клас CompareMakeupPrices призначений для порівняння цін на продукти
+     в магазині Makeup.com.ua. Він містить об'єкти типу ItemMakeup та ItemT
+     який може бути будь-яким підкласом ItemBase, включаючи ItemMakeup та ItemMakeupHistory,
+      а також атрибут price_delta (різниця в цінах між продуктами у відсотках).
+      Клас також містить методи для порівняння та хешування."""
+
+    item: ItemMakeup
     compare: ItemT
     price_delta: float = field(init=False, default=None)
 

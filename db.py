@@ -5,7 +5,7 @@ import time
 from collections import deque, defaultdict
 from typing import NamedTuple, Deque, Sequence, Dict, TypeVar, Iterable
 
-from data import Item
+from data import ItemMakeup
 
 ItemId = TypeVar('ItemId', bound=str)
 
