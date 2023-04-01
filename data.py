@@ -25,10 +25,10 @@ class ItemBase:
         return self.item_id == other.item_id
 
     def __lt__(self, other):
-        return self.price > other.price
+        return self.price < other.price
 
     def __gt__(self, other):
-        return self.price < other.price
+        return self.price > other.price
 
     def __hash__(self):
         return hash(self.item_id)
@@ -72,6 +72,9 @@ class ItemMakeupHistory(ItemBase):
     def middle_price(self):
         return self.price
 
+    def __hash__(self):
+        return hash(self.item_id)
+
 
 ItemT = TypeVar('ItemT', bound=ItemBase)
 
@@ -100,13 +103,13 @@ class CompareMakeupPrices:
 
     def __lt__(self, other):
         if isinstance(other, type(self)):
-            return self.price_delta > other.price_delta
-        return self.price_delta > other
+            return self.price_delta < other.price_delta
+        return self.price_delta < other
 
     def __gt__(self, other):
         if isinstance(other, type(self)):
-            return self.price_delta < other.price_delta
-        return self.price_delta < other
+            return self.price_delta > other.price_delta
+        return self.price_delta > other
 
     def __hash__(self):
         return hash(self.item)
