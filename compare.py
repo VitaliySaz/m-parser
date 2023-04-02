@@ -12,14 +12,17 @@ strategies = {}
 
 class CompareManagerBase(abc.ABC):
 
+    """Клас CompareManagerBase є абстрактним базовим класом
+    для управління порівнянням товарів в інтернет-магазині Makeup.com.ua"""
+
     def __init__(self, dict_item: Dict[str, ItemMakeup]):
         self.dict_item = dict_item
 
     @abc.abstractmethod
-    def get_compare_data(self, compare_list: Dict[str, str]) -> Iterable[str, ItemT]:
+    def get_compare_data(self, compare_dict: Dict[str, str]) -> Iterable[str, ItemT]:
         pass
 
-    def to_compare(self, strategy: Callable[[Iterable[ItemMakeup]], dict]):
+    def to_compare(self, strategy):
         compare_dict = strategy(self.dict_item.values())
         compare_data = self.get_compare_data(compare_dict)
         for base_id, compare_obj in compare_data:
@@ -36,11 +39,14 @@ class DbManagerBase:
             self.db.add_price(item_id=value.item_id, price=value.price)
         self.db.commit()
 
+    def get_prices_dict(self, compare_dict):
+        return self.db.get_prices(compare_dict.values())
+
 
 class CompareManagerHistory(DbManagerBase, CompareManagerBase):
 
     def get_compare_data(self, compare_dict):
-        prices_dict = self.db.get_prices(compare_dict.values())
+        prices_dict = self.get_prices_dict(compare_dict)
         for base_id, compare_id in compare_dict.items():
             if not (prices := prices_dict.get(compare_id)):
                 continue
@@ -64,9 +70,9 @@ class CompareManagerItem(CompareManagerBase):
 
 ##############
 
-def simple_strategy(items: Iterable[ItemMakeup]) -> dict:
+def simple_strategy(items: Iterable[ItemMakeup]) -> Dict[str, str]:
     return {item.item_id: item.item_id for item in items}
 
 
-def ua_eu_strategy(items: Iterable[ItemMakeup]) -> dict:
+def ua_eu_strategy(items: Iterable[ItemMakeup]) -> Dict[str, str]:
     return {item.item_id: item.id_ua for item in items if item.is_eu}
