@@ -4,80 +4,63 @@ import asyncio
 import datetime
 from pprint import pprint
 from typing import NamedTuple, Optional, List
+from loguru import logger
 
 import telegram
 
 import pars
-from compare import CompareManagerHistory, ua_eu_strategy, CompareManagerItem
+from compare import CompareItemToHistory, ua_eu_strategy, CompareItemToItem
 from data import ItemMakeup
+from manager import time_manager, Manager
 from utils import get_items_obj_dict
 
 
-class ManagerSettings(NamedTuple):
+class Settings(NamedTuple):
     pars: List[dict]
     delta_limit: int = 30
     timedelta: dict = {'seconds': 5}
     set_to_db: dict = {'seconds': 10}
 
 
-settings: Optional[ManagerSettings] = None
-
-
-def time_manager(timedelta):
-    future = None
-
-    def wrapper(func):
-        def decorate(*args, **kwargs):
-            nonlocal future
-            td = datetime.timedelta(**timedelta)
-            now = datetime.datetime.now()
-            if not future:
-                future = now + td
-            remaining_seconds = (future - now).total_seconds()
-            if remaining_seconds < 0:
-                func(*args, **kwargs)
-                future = now + td
-        return decorate
-    return wrapper
+settings: Optional[Settings] = None
+logger.add("file_1.log", rotation="500 MB")
 
 def to_history():
     print('save the data')
 
 
-async def main1(data):
-    print('start')
+async def gat_compares(data, manager):
     item_list = await pars.get_items(data)
-    print('end pars')
     items_obj_dict = get_items_obj_dict(item_list, ItemMakeup)
-    manager = CompareManagerHistory(items_obj_dict)
-    compare_item = manager.to_compare(ua_eu_strategy)
-    # print(set(compare_item))
-    limit = settings.delta_limit
-    for r in filter(lambda x: x > limit, sorted(compare_item, reverse=True)):
-        # bot = telegram.Bot(token='token')
-        # await bot.send_message(chat_id='1000612443', text=str(r))
-        print(r)
-    print('#' * 10)
+    # logger.info(f'got {len(items_obj_dict)} items')
+    compare = CompareItemToHistory(items_obj_dict, ua_eu_strategy)
+    # logger.info(f'got {len(set(compare))} compares')
+    manager.add_comparison(compare)
+    logger.info(f'\n got base_compare {len(set(manager.base_compare))} and'
+                f'\n new_compare {len(set(manager.new_compare))} and'
+                f'\n difference {len(set(manager.difference))}: {set(manager.difference)}')
     res = time_manager(settings.set_to_db)
-    dec = res(manager.add_to_history)
-    dec()
+    res(compare.add_to_history)()
+    return sorted((comp for comp in manager.difference if comp > settings.delta_limit), reverse=True)
 
 
 async def handle_client(reader, writer):
     global settings
     try:
         while True:
-            data = await reader.read(1024)
+            data = await reader.read(2048)
             if not data:
                 break
             try:
                 res = json.loads(data.decode())
-                settings = ManagerSettings(**res)
+                settings = Settings(**res)
+                manager = Manager()
                 print('value is obtained', settings)
                 while True:
                     for pars_data in settings.pars:
-                        await main1(pars.Settings(**pars_data))
-                    # writer.write(str(some_int).encode())
+                        res = await gat_compares(pars.Settings(**pars_data), manager)
+                        if res:
+                            writer.write(json.dumps([str(x) for x in res]).encode())
                     await writer.drain()
                     await asyncio.sleep(datetime.timedelta(**settings.timedelta).seconds)
             except Exception as e:
@@ -100,4 +83,5 @@ def run():
 
 
 if __name__ == '__main__':
+
     run()
