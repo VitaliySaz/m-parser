@@ -10,20 +10,21 @@ from db import SavePriceDeque, SavePrice
 strategies = {}
 
 
-class CompareManagerBase(abc.ABC):
+class CompareBase(abc.ABC):
 
-    """Клас CompareManagerBase є абстрактним базовим класом
+    """Клас CompareBase є абстрактним базовим класом
     для управління порівнянням товарів в інтернет-магазині Makeup.com.ua"""
 
-    def __init__(self, dict_item: Dict[str, ItemMakeup]):
+    def __init__(self, dict_item: Dict[str, ItemMakeup], strategy):
         self.dict_item = dict_item
+        self.strategy = strategy
 
     @abc.abstractmethod
     def get_compare_data(self, compare_dict: Dict[str, str]) -> Iterable[str, ItemT]:
         pass
 
-    def to_compare(self, strategy):
-        compare_dict = strategy(self.dict_item.values())
+    def __iter__(self):
+        compare_dict = self.strategy(self.dict_item.values())
         compare_data = self.get_compare_data(compare_dict)
         for base_id, compare_obj in compare_data:
             if not self.dict_item.get(base_id):
@@ -31,11 +32,11 @@ class CompareManagerBase(abc.ABC):
             yield CompareMakeupPrices(item=self.dict_item[base_id], compare=compare_obj)
 
 
-class DbManagerBase:
+class DbMixin:
     db = SavePriceDeque()
 
-    def add_to_history(self, dict_item):
-        for value in dict_item.values():
+    def add_to_history(self):
+        for value in self.dict_item.values():
             self.db.add_price(item_id=value.item_id, price=value.price)
         self.db.commit()
 
@@ -43,7 +44,7 @@ class DbManagerBase:
         return self.db.get_prices(compare_dict.values())
 
 
-class CompareManagerHistory(DbManagerBase, CompareManagerBase):
+class CompareItemToHistory(DbMixin, CompareBase):
 
     def get_compare_data(self, compare_dict):
         prices_dict = self.get_prices_dict(compare_dict)
@@ -54,12 +55,12 @@ class CompareManagerHistory(DbManagerBase, CompareManagerBase):
             yield base_id, ItemMakeupHistory(item_id=compare_id, price=mean_price)
 
 
-class CompareManagerItem(CompareManagerBase):
+class CompareItemToItem(CompareBase):
 
     db = SavePriceDeque()
 
-    def __init__(self, dict_item, dict_item_compare):
-        super().__init__(dict_item)
+    def __init__(self, dict_item, dict_item_compare, strategy):
+        super().__init__(dict_item, strategy)
         self.dict_item_compare = dict_item_compare
 
     def get_compare_data(self, compare_dict):
