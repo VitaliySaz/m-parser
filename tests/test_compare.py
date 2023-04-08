@@ -83,6 +83,5 @@ class TestCompareManagerItem(unittest.TestCase):
             repr(list(manager2)), '[<CompareMakeupPrices: 1, 1, 100.0>, <CompareMakeupPrices: 2, 2, 50.0>]')
         self.assertEqual(len(set(manager2)), 2)
         self.assertEqual(len(set(manager2) | set(manager1)), 3)
-        print(set(manager2) | set(manager1))
 
 

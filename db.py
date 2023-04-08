@@ -14,7 +14,7 @@ class Hist(NamedTuple):
     price: float
 
 class SavePrice(abc.ABC):
-    db_name = 'prices'
+    db_name = 'prices_db'
 
     @abc.abstractmethod
     def create_tables(self):
@@ -35,7 +35,7 @@ class SavePrice(abc.ABC):
 class SavePriceDeque(SavePrice):
 
     def __init__(self):
-        self.db = shelve.open(f'{self.db_name}.db', writeback=True)
+        self.db = shelve.open(f'prices_db/{self.db_name}.db', writeback=True)
 
     def __del__(self):
         self.db.close()
@@ -54,8 +54,3 @@ class SavePriceDeque(SavePrice):
 
     def commit(self):
         self.db.sync()
-
-
-test = {
-    '1234': 'deque((1.02.23, 129.5),)'
-}

@@ -31,6 +31,9 @@ class CompareBase(abc.ABC):
                 continue
             yield CompareMakeupPrices(item=self.dict_item[base_id], compare=compare_obj)
 
+    def __len__(self):
+        return len(self.dict_item)
+
 
 class DbMixin:
     db = SavePriceDeque()

@@ -29,7 +29,7 @@ def exceptions_handler():
             except asyncio.exceptions.TimeoutError as ex:
                 print(f'Помилка TimeoutError: {func.__name__} де {args, kwargs}')
             except aiohttp.ClientConnectorError:
-                print('Cannot connect to host')
+                pass
         return wrapper
     return decorator
 

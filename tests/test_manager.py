@@ -3,6 +3,7 @@ import unittest
 from compare import CompareItemToHistory, ua_eu_strategy
 from data import ItemMakeup
 from manager import Manager
+from timechecker import TimeChecker
 
 
 class TestManager(unittest.TestCase):

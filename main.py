@@ -9,65 +9,70 @@ from loguru import logger
 import telegram
 
 import pars
-from compare import CompareItemToHistory, ua_eu_strategy, CompareItemToItem
+from compare import CompareItemToHistory, ua_eu_strategy, CompareItemToItem, simple_strategy
 from data import ItemMakeup
-from manager import time_manager, Manager
+from manager import Manager
+from timechecker import CallAfterTimedeltaError, OtherTimeError, TimeChecker
 from utils import get_items_obj_dict
 
 
 class Settings(NamedTuple):
     pars: List[dict]
-    delta_limit: int = 30
-    timedelta: dict = {'seconds': 5}
-    set_to_db: dict = {'seconds': 10}
+    delta_limit: int = 1
+    pars_interval: dict = {'seconds': 5}
+    add_to_history_interval: dict = {'seconds': 20}
 
 
 settings: Optional[Settings] = None
-logger.add("file_1.log", rotation="500 MB")
+logger.add("logs/main.log", rotation="500 MB")
+time_check = TimeChecker()
 
-def to_history():
-    print('save the data')
-
-
+@TimeChecker.call_within_timeframe(datetime.time(9, 0), datetime.time(23, 0))
 async def gat_compares(data, manager):
     item_list = await pars.get_items(data)
     items_obj_dict = get_items_obj_dict(item_list, ItemMakeup)
-    # logger.info(f'got {len(items_obj_dict)} items')
-    compare = CompareItemToHistory(items_obj_dict, ua_eu_strategy)
-    # logger.info(f'got {len(set(compare))} compares')
-    manager.add_comparison(compare)
-    logger.info(f'\n got base_compare {len(set(manager.base_compare))} and'
-                f'\n new_compare {len(set(manager.new_compare))} and'
-                f'\n difference {len(set(manager.difference))}: {set(manager.difference)}')
-    res = time_manager(settings.set_to_db)
-    res(compare.add_to_history)()
-    return sorted((comp for comp in manager.difference if comp > settings.delta_limit), reverse=True)
+    logger.info(f'got {len(items_obj_dict)} items')
+    compare = CompareItemToHistory(items_obj_dict, simple_strategy)
+    compare_set = set(comp for comp in compare if comp > settings.delta_limit)
+    logger.info(f'got {len(compare)} compares')
+    manager.add_comparison(compare_set)
+    logger.info(f'\n --- got base_compare: {len(manager.base_compare)}'
+                f'\n --- got new_compare: {len(manager.new_compare)}'
+                f'\n --- got difference: {len(manager.difference)}')
+    try:
+        res = time_check.call_after_delta(settings.add_to_history_interval)
+        res(compare.add_to_history)()
+        logger.info(f'add {len(compare)} to history')
+    except OtherTimeError as ex:
+        logger.info(ex)
+    return sorted(list(manager.difference), reverse=True)
 
 
 async def handle_client(reader, writer):
     global settings
     try:
         while True:
-            data = await reader.read(2048)
-            if not data:
-                break
             try:
+                data = await reader.read(2048)
                 res = json.loads(data.decode())
                 settings = Settings(**res)
-                manager = Manager()
-                print('value is obtained', settings)
-                while True:
-                    for pars_data in settings.pars:
+            except TypeError:
+                raise ConnectionResetError
+            manager = Manager()
+            print('value is obtained', settings)
+            while True:
+                await writer.drain()
+                await asyncio.sleep(datetime.timedelta(**settings.pars_interval).seconds)
+                for pars_data in settings.pars:
+                    try:
                         res = await gat_compares(pars.Settings(**pars_data), manager)
-                        if res:
-                            writer.write(json.dumps([str(x) for x in res]).encode())
-                    await writer.drain()
-                    await asyncio.sleep(datetime.timedelta(**settings.timedelta).seconds)
-            except Exception as e:
-                writer.write(f'Error: {e}'.encode())
-                raise e
+                    except CallAfterTimedeltaError as ex:
+                        logger.info(ex)
+                        continue
+                    if res:
+                        writer.write(json.dumps([str(x) for x in res]).encode())
     except ConnectionResetError:
-        print(f'клієнт розірвар зєднання')
+        logger.info('The client disconnected')
     finally:
         writer.close()
 
@@ -83,5 +88,8 @@ def run():
 
 
 if __name__ == '__main__':
+    try:
+        run()
+    except:
+        logger.exception("What?!")
 
-    run()
