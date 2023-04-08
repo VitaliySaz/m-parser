@@ -1,23 +1,3 @@
-import datetime
-import time
-
-future = None
-def time_manager(timedelta):
-    def wrapper(func):
-        def decorate(*args, **kwargs):
-            global future
-            td = datetime.timedelta(**timedelta)
-            now = datetime.datetime.now()
-            if not future:
-                future = now + td
-            remaining_seconds = (future - now).total_seconds()
-            if remaining_seconds < 0:
-                func(*args, **kwargs)
-                future = now + td
-        return decorate
-    return wrapper
-
-
 class Manager:
 
     def __init__(self):
@@ -36,13 +16,3 @@ class Manager:
 
     def to_reset(self):
         self.base_compare = set()
-
-if __name__ == '__main__':
-
-    def g():
-        print('hello')
-
-    for _ in range(100):
-        print('as')
-        time_manager({'seconds': 5})(g)()
-        time.sleep(1)
