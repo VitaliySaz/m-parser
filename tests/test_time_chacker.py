@@ -10,7 +10,7 @@ class TestTimeChecker(unittest.TestCase):
     def test_call_after_delta(self):
         tc = TimeChecker()
 
-        @tc.call_after_delta({'seconds': 1})
+        @tc.call_after_delta(seconds=1)
         def my_func():
             return "Hello"
 
@@ -30,7 +30,7 @@ class TestTimeChecker(unittest.TestCase):
         start_time = datetime.datetime.now() - datetime.timedelta(hours=2)
         end_time = datetime.datetime.now() - datetime.timedelta(hours=1)
 
-        @tc.call_within_timeframe(start_time.time(), end_time.time())
+        @tc.call_within_timeframe((start_time.hour,), (end_time.hour,))
         def my_func():
             return "Hello"
 
@@ -41,6 +41,6 @@ class TestTimeChecker(unittest.TestCase):
         start_time = datetime.datetime.now() - datetime.timedelta(hours=1)
         end_time = datetime.datetime.now() + datetime.timedelta(hours=1)
 
-        @tc.call_within_timeframe(start_time.time(), end_time.time())
+        @tc.call_within_timeframe((start_time.hour,), (end_time.hour,))
         def my_func():
             return "Hello"

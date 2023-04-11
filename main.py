@@ -1,8 +1,5 @@
 
 import asyncio
-import datetime
-
-from typing import NamedTuple, Optional, List
 
 from loguru import logger
 
@@ -19,10 +16,9 @@ from utils import get_items_obj_dict
 
 logger.add("logs/main.log", rotation="500 MB")
 manager = Manager()
-time_checker = TimeChecker()
 
 
-@time_checker.call_within_timeframe(datetime.time(9, 0), datetime.time(23, 0))
+@TimeChecker.call_within_timeframe(*PARS_TIMEFRAME)
 async def gat_compares(data):
     logger.info(f'Start parsing')
     item_list = await pars.get_items(data)
@@ -42,7 +38,7 @@ async def gat_compares(data):
     return sorted(list(manager.difference), reverse=True)
 
 
-@time_checker.call_after_delta({'seconds': 20})
+@TimeChecker.call_after_delta(**ADD_TO_HISTORY_AFTER)
 def add_to_history(compare):
     compare.add_to_history()
     logger.info(f'add {len(compare)} to history')
@@ -52,7 +48,7 @@ def send_massage(data):
     print(f'send masage {data}')
 
 
-@time_checker.call_after_delta({'seconds': 5})
+@TimeChecker.call_after_delta(**PARS_AFTER)
 async def run():
     for pars_data in PARS_DEFAULT:
         try:

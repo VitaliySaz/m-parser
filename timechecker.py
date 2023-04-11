@@ -11,19 +11,20 @@ class OtherTimeError(Exception):
 
 class TimeChecker:
 
-    def __init__(self):
-        self.future = None
+    @staticmethod
+    def call_after_delta(**time):
+        future = None
 
-    def call_after_delta(self, timedelta_limit):
         def decorator(func):
             def wrapper(*args, **kwargs):
-                td = datetime.timedelta(**timedelta_limit)
+                nonlocal future
+                td = datetime.timedelta(**time)
                 now = datetime.datetime.now()
-                if not self.future:
-                    self.future = now + td
-                remaining_seconds = (self.future - now).total_seconds()
+                if not future:
+                    future = now + td
+                remaining_seconds = (future - now).total_seconds()
                 if remaining_seconds < 0:
-                    self.future = now + td
+                    future = now + td
                     return func(*args, **kwargs)
                 raise OtherTimeError(
                     f"Function {func.__name__} can only be called after {remaining_seconds} sec.")
@@ -35,7 +36,7 @@ class TimeChecker:
         def decorator(func):
             def wrapper(*args, **kwargs):
                 now = datetime.datetime.now().time()
-                if start_time <= now <= end_time:
+                if datetime.time(*start_time) <= now <= datetime.time(*end_time):
                     return func(*args, **kwargs)
                 raise CallAfterTimedeltaError(
                     f"Function {func.__name__} can only be called between {start_time} and {end_time}.")
