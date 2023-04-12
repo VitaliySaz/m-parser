@@ -54,34 +54,36 @@ class TestCompareManagerItem(unittest.TestCase):
     def setUp(self):
         self.item1 = ItemMakeup(item_id='1', price=100, product_id='12345', value='1')
         self.item2 = ItemMakeup(item_id='2', price=200, product_id='12345', value='2')
-        self.item21 = ItemMakeup(item_id='3_3', price=200, product_id='12345', value='2')
-        self.dict_item = {'1': self.item1, '2': self.item2, '3_3': self.item21}
+        self.item21 = ItemMakeup(item_id='3', price=200, product_id='12345', value='2')
+        self.dict_item = {'1': self.item1, '2': self.item2, '3': self.item21}
         self.item3 = ItemMakeup(item_id='1', price=200, product_id='12345', value='1')
         self.item4 = ItemMakeup(item_id='2', price=300, product_id='12345', value='2')
-        self.item41 = ItemMakeup(item_id='3', price=300, product_id='12345', value='2')
-        self.dict_item2 = {'1': self.item3, '2': self.item4, '3': self.item41}
+        self.item41 = ItemMakeup(item_id='3_3', price=300, product_id='12345', value='2')
+        self.dict_item2 = {'1': self.item3, '2': self.item4, '3_3': self.item41}
 
     def test_empty_dict_item(self):
-        manager = CompareItemToItem({}, {}, ua_eu_strategy)
+        CompareItemToItem.lost_dict_item = None
+        manager = CompareItemToItem(self.dict_item, ua_eu_strategy)
         res = list(manager)
         self.assertEqual(len(res), 0)
 
-    def test_get_compare_simple_strategy(self):
-        self.manager = CompareItemToItem(self.dict_item, self.dict_item2, simple_strategy)
-        res = list(self.manager)
-        self.assertEqual(len(res), 2)
-        self.assertEqual(
-            repr(res), '[<CompareMakeupPrices: 1, 1, -50.0>, <CompareMakeupPrices: 2, 2, -33.33333333333333>]')
-
     def test_get_compare_ua_eu_strategy(self):
-        manager = CompareItemToItem(self.dict_item, self.dict_item2, ua_eu_strategy)
-        manager1 = CompareItemToItem(self.dict_item, self.dict_item, simple_strategy)
-        manager2 = CompareItemToItem(self.dict_item2, self.dict_item, simple_strategy)
-
-        self.assertEqual(len(list(manager)), 1)
+        CompareItemToItem.lost_dict_item = None
+        _ = list(CompareItemToItem(self.dict_item, ua_eu_strategy))
+        manager1 = list(CompareItemToItem(self.dict_item2, ua_eu_strategy))
+        # self.assertEqual(len(manager1), 3)
         self.assertEqual(
-            repr(list(manager2)), '[<CompareMakeupPrices: 1, 1, 100.0>, <CompareMakeupPrices: 2, 2, 50.0>]')
+            repr(list(manager1)),
+            '[<CompareMakeupPrices: 3_3, 3, 50.0>]')
+
+    def test_get_compare_simple_strategy(self):
+        CompareItemToItem.lost_dict_item = None
+        manager = list(CompareItemToItem(self.dict_item, simple_strategy))
+        manager1 = list(CompareItemToItem(self.dict_item2, simple_strategy))
+        manager2 = list(CompareItemToItem(self.dict_item, simple_strategy))
+
+        self.assertEqual(len(manager), 0)
+        self.assertEqual(
+            repr(manager1), '[<CompareMakeupPrices: 1, 1, 100.0>, <CompareMakeupPrices: 2, 2, 50.0>]')
         self.assertEqual(len(set(manager2)), 2)
-        self.assertEqual(len(set(manager2) | set(manager1)), 3)
-
-
+        self.assertEqual(len(set(manager2) | set(manager1)), 2)

@@ -2,16 +2,26 @@ from __future__ import annotations
 
 import abc
 from statistics import mean
-from typing import Sequence, NamedTuple, List, Iterable, Dict, Callable, Tuple
+from typing import Iterable, Dict
 
 from data import ItemMakeup, ItemMakeupHistory, CompareMakeupPrices, ItemT
-from db import SavePriceDeque, SavePrice
+from db import SavePriceDeque
 
 strategies = {}
+compares = {}
+
+
+def register_strategy(strategy):
+    strategies[strategy.__name__] = strategy
+    return strategy
+
+
+def register_compare(compare):
+    compares[compare.__name__] = compare
+    return compare
 
 
 class CompareBase(abc.ABC):
-
     """Клас CompareBase є абстрактним базовим класом
     для управління порівнянням товарів в інтернет-магазині Makeup.com.ua"""
 
@@ -47,6 +57,7 @@ class DbMixin:
         return self.db.get_prices(compare_dict.values())
 
 
+@register_compare
 class CompareItemToHistory(DbMixin, CompareBase):
 
     def get_compare_data(self, compare_dict):
@@ -58,25 +69,28 @@ class CompareItemToHistory(DbMixin, CompareBase):
             yield base_id, ItemMakeupHistory(item_id=compare_id, price=mean_price)
 
 
+@register_compare
 class CompareItemToItem(CompareBase):
-
-    db = SavePriceDeque()
-
-    def __init__(self, dict_item, dict_item_compare, strategy):
-        super().__init__(dict_item, strategy)
-        self.dict_item_compare = dict_item_compare
+    lost_dict_item = None
 
     def get_compare_data(self, compare_dict):
         for base_id, compare_id in compare_dict.items():
-            if not (compare_item := self.dict_item_compare.get(compare_id)):
+            try:
+                compare_item = __class__.lost_dict_item[compare_id]
+                yield base_id, compare_item
+            except KeyError:
                 continue
-            yield base_id, compare_item
+            except TypeError:
+                break
+        __class__.lost_dict_item = self.dict_item
 
 ##############
 
+@register_strategy
 def simple_strategy(items: Iterable[ItemMakeup]) -> Dict[str, str]:
     return {item.item_id: item.item_id for item in items}
 
 
+@register_strategy
 def ua_eu_strategy(items: Iterable[ItemMakeup]) -> Dict[str, str]:
     return {item.item_id: item.id_ua for item in items if item.is_eu}

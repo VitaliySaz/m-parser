@@ -6,7 +6,7 @@ from loguru import logger
 import telegram
 
 import pars
-from compare import CompareItemToHistory, simple_strategy
+from compare import compares, strategies
 from data import ItemMakeup
 from manager import Manager
 from settings import *
@@ -17,14 +17,13 @@ from utils import get_items_obj_dict
 logger.add("logs/main.log", rotation="500 MB")
 manager = Manager()
 
-
 @TimeChecker.call_within_timeframe(*PARS_TIMEFRAME)
 async def gat_compares(data):
-    logger.info(f'Start parsing')
+    logger.info(f'Start parsing {data}')
     item_list = await pars.get_items(data)
     items_obj_dict = get_items_obj_dict(item_list, ItemMakeup)
     logger.info(f'Get {len(items_obj_dict)} items')
-    compare = CompareItemToHistory(items_obj_dict, simple_strategy)
+    compare = compares[COMPARE](items_obj_dict, strategies[COMPARE_STRATEGY])
     compare_set = set(comp for comp in compare if comp > DELTA_LIMIT_PERCENT)
     logger.info(f'Get {len(compare)} compares')
     manager.add_comparison(compare_set)
@@ -45,15 +44,16 @@ def add_to_history(compare):
 
 
 def send_massage(data):
-    print(f'send masage {data}')
+    logger.info(f'send {len(data)} massages')
 
 
 @TimeChecker.call_after_delta(**PARS_AFTER)
 async def run():
-    for pars_data in PARS_DEFAULT:
+    for pars_data in PARS_DATA:
         try:
             res = await gat_compares(pars.Settings(**pars_data))
-            send_massage(res)
+            if res:
+                send_massage(res)
         except CallAfterTimedeltaError:
             continue
 
