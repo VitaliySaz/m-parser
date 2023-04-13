@@ -1,10 +1,8 @@
 import asyncio
 import json
-from dataclasses import dataclass, field
 
 from typing import Set, NamedTuple
 
-from data import ItemMakeup
 from utils import aiohttp_request, exceptions_handler, get_page_products_id
 
 HEADERS = {
@@ -22,7 +20,6 @@ class Settings(NamedTuple):
 
 
 class ParserProducts:
-
     COUNT_PRODUCTS_IN_PAGE = 36
     PAGE_URL = 'https://makeup.com.ua/ajax/filter/'
 
@@ -73,6 +70,7 @@ class ParserItems:
         await asyncio.gather(
             *[asyncio.create_task(self._set_product_items(pr)) for pr in self.product_id_set]
         )
+
 
 async def get_items(settings: dict):
     pr = ParserProducts(Settings(**settings))
