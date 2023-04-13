@@ -8,7 +8,7 @@ from utils import aiohttp_request, exceptions_handler, get_page_products_id
 HEADERS = {
     'Content type': 'text_html/javascript; charset=utf-8',
     'Accept': 'application/json, text_html/javascript, */*; q=0.01; charset=utf-8',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Appl'
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86, 64) Appl'
                   'eWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
     'X-Requested-With': 'XMLHttpRequest'}
 
