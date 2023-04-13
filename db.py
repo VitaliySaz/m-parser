@@ -6,6 +6,7 @@ from collections import deque, defaultdict
 from typing import NamedTuple, Deque, Sequence, Dict, TypeVar, Iterable
 
 from data import ItemMakeup
+from settings import DB_NAME
 
 ItemId = TypeVar('ItemId', bound=str)
 
@@ -14,7 +15,6 @@ class Hist(NamedTuple):
     price: float
 
 class SavePrice(abc.ABC):
-    db_name = 'prices_db'
 
     @abc.abstractmethod
     def create_tables(self):
@@ -35,7 +35,7 @@ class SavePrice(abc.ABC):
 class SavePriceDeque(SavePrice):
 
     def __init__(self):
-        self.db = shelve.open(f'prices_db/{self.db_name}.db', writeback=True)
+        self.db = shelve.open(f'{DB_NAME}/{DB_NAME}.db', writeback=True)
 
     def __del__(self):
         self.db.close()

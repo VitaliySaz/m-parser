@@ -13,7 +13,6 @@ from settings import *
 from timechecker import CallAfterTimedeltaError, OtherTimeError, TimeChecker
 from utils import get_items_obj_dict
 
-
 logger.add("logs/main.log", rotation="500 MB")
 manager = Manager()
 

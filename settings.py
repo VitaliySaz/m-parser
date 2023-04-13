@@ -7,9 +7,11 @@ PARS_DATA = [
             {
                 'page_count': 10, 'category_id': 3
             },
-        'DELTA_LIMIT': 10
+        'DELTA_LIMIT': 5
     }
 ]
+
+DB_NAME = 'prices'
 
 # Time management
 PARS_TIMEFRAME = ((9, 0), (23, 0))
@@ -24,3 +26,6 @@ TELEGRAM = {
     'TOKEN': os.getenv('TOKEN') or input('Set telegram token: '),
     'CHAT_ID': os.getenv('CHAT_ID') or input('Set telegram chat id: ')
 }
+
+if not os.path.exists(DB_NAME):
+    os.makedirs(DB_NAME)
