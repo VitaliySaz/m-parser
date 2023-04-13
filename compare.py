@@ -84,6 +84,7 @@ class CompareItemToItem(CompareBase):
                 break
         __class__.lost_dict_item = self.dict_item
 
+
 ##############
 
 @register_strategy

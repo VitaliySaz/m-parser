@@ -10,7 +10,6 @@ st = {
 
 
 def main():
-
     # Создаем объект сокета
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

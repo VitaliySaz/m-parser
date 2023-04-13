@@ -28,7 +28,9 @@ class TimeChecker:
                     return func(*args, **kwargs)
                 raise OtherTimeError(
                     f"Function {func.__name__} can only be called after {remaining_seconds} sec.")
+
             return wrapper
+
         return decorator
 
     @staticmethod
@@ -40,5 +42,7 @@ class TimeChecker:
                     return func(*args, **kwargs)
                 raise CallAfterTimedeltaError(
                     f"Function {func.__name__} can only be called between {start_time} and {end_time}.")
+
             return wrapper
+
         return decorator

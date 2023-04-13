@@ -1,9 +1,7 @@
-
 import asyncio
 
-from loguru import logger
-
 import telegram
+from loguru import logger
 
 import pars
 from compare import compares, strategies
@@ -15,6 +13,7 @@ from utils import get_items_obj_dict
 
 logger.add("logs/main.log", rotation="500 MB")
 manager = Manager()
+
 
 @TimeChecker.call_within_timeframe(*PARS_TIMEFRAME)
 async def gat_compares(data):
@@ -73,6 +72,7 @@ async def main():
             await run()
         except OtherTimeError:
             continue
+
 
 if __name__ == '__main__':
     asyncio.run(main())

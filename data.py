@@ -8,7 +8,6 @@ from typing import *
 
 
 class ItemBase(abc.ABC):
-
     """Клас ItemBase є базовим класом, який визначає деякі спільні властивості
     та методи для об'єктів товарів, включаючи ідентифікатор товару та його ціну,
      а також методи для порівняння, рівності та хешування."""
@@ -37,7 +36,6 @@ class ItemBase(abc.ABC):
 
 
 class ItemMakeup(ItemBase):
-
     """Клас Item розширює ItemBase конкретно для роботи з магазином Makeup.com.ua і додає
     дві властивості для отримання ідентифікатора  продукту та його значення, а також методи
      для визначення того, чи є товар в ЄС та отримання його ідентифікаторів в ЄС та Україні."""
@@ -63,7 +61,6 @@ class ItemMakeup(ItemBase):
 
 
 class ItemMakeupHistory(ItemBase):
-
     """Клас ItemMakeupHistory також є підкласом класу ItemBase,
     але не містить жодних додаткових властивостей чи методів.
     Його призначення - зберігати історію цін на продукт."""
@@ -77,7 +74,6 @@ ItemT = TypeVar('ItemT', bound=ItemBase)
 
 
 class CompareMakeupPrices:
-
     """Клас CompareMakeupPrices призначений для порівняння цін на продукти
      в магазині Makeup.com.ua. Він містить об'єкти типу ItemMakeup та ItemT
      який може бути будь-яким підкласом ItemBase, включаючи ItemMakeup та ItemMakeupHistory,

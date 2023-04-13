@@ -1,18 +1,19 @@
 import abc
 import shelve
-import sqlite3
-import time
-from collections import deque, defaultdict
-from typing import NamedTuple, Deque, Sequence, Dict, TypeVar, Iterable
 
-from data import ItemMakeup
+import time
+from collections import deque
+from typing import NamedTuple, Deque, Dict, TypeVar, Iterable
+
 from settings import DB_NAME
 
 ItemId = TypeVar('ItemId', bound=str)
 
+
 class Hist(NamedTuple):
     time: float
     price: float
+
 
 class SavePrice(abc.ABC):
 
@@ -31,6 +32,7 @@ class SavePrice(abc.ABC):
     @abc.abstractmethod
     def commit(self) -> None:
         pass
+
 
 class SavePriceDeque(SavePrice):
 
