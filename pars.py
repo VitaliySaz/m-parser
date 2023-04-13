@@ -74,8 +74,8 @@ class ParserItems:
             *[asyncio.create_task(self._set_product_items(pr)) for pr in self.product_id_set]
         )
 
-async def get_items(settings: Settings):
-    pr = ParserProducts(settings)
+async def get_items(settings: dict):
+    pr = ParserProducts(Settings(**settings))
     await pr.get_product_set()
     it = ParserItems(pr.product_set)
     await it.get_item_dict()

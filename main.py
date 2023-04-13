@@ -20,11 +20,11 @@ manager = Manager()
 @TimeChecker.call_within_timeframe(*PARS_TIMEFRAME)
 async def gat_compares(data):
     logger.info(f'Start parsing {data}')
-    item_list = await pars.get_items(data)
+    item_list = await pars.get_items(data['PARS'])
     items_obj_dict = get_items_obj_dict(item_list, ItemMakeup)
     logger.info(f'Get {len(items_obj_dict)} items')
     compare = compares[COMPARE](items_obj_dict, strategies[COMPARE_STRATEGY])
-    compare_set = set(comp for comp in compare if comp > DELTA_LIMIT_PERCENT)
+    compare_set = set(comp for comp in compare if comp > data['DELTA_LIMIT'])
     logger.info(f'Get {len(compare)} compares')
     manager.add_comparison(compare_set)
     logger.info(f'\n --- Get base_compare: {len(manager.base_compare)}'
@@ -39,21 +39,31 @@ async def gat_compares(data):
 
 @TimeChecker.call_after_delta(**ADD_TO_HISTORY_AFTER)
 def add_to_history(compare):
-    compare.add_to_history()
-    logger.info(f'add {len(compare)} to history')
+    try:
+        compare.add_to_history()
+        logger.info(f'add {len(compare)} to history')
+    except AttributeError:
+        pass
 
 
-def send_massage(data):
-    logger.info(f'send {len(data)} massages')
+async def send_massage(compare_data):
+    for data in compare_data:
+        try:
+            bot = telegram.Bot(token=TELEGRAM['TOKEN'])
+            await bot.send_message(chat_id=TELEGRAM['CHAT_ID'], text=str(data))
+        except telegram.error.InvalidToken as ex:
+            logger.error(ex)
+            exit()
+    logger.info(f'send {len(compare_data)} massages')
 
 
 @TimeChecker.call_after_delta(**PARS_AFTER)
 async def run():
     for pars_data in PARS_DATA:
         try:
-            res = await gat_compares(pars.Settings(**pars_data))
+            res = await gat_compares(pars_data)
             if res:
-                send_massage(res)
+                await send_massage(res)
         except CallAfterTimedeltaError:
             continue
 
@@ -64,7 +74,6 @@ async def main():
             await run()
         except OtherTimeError:
             continue
-
 
 if __name__ == '__main__':
     asyncio.run(main())
